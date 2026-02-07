@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment 
+metadata:
+  name: jenkins-demo
+
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: jenkins-demo
+  template:
+    metadata:
+      labels:
+        app: jenkins-demo
+    spec:
+      containers:
+      - name: app
+        image: johnvelan/jenkins-docker-demo:latest
+        ports:
+        - containerPort: 8
