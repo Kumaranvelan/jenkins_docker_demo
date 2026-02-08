@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         IMAGE_NAME = "johnvelan/jenkins-docker-demo"
+        IMAGE_TAG = "${env.BUILD_NUMBER}" // Unique tag for each build
     }
 
     stages {
@@ -16,7 +17,8 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:latest .'
+                sh 'docker build -t $IMAGE_NAME:$IMAGE_TAG .'
+                sh 'docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest'
             }
         }
 
@@ -34,8 +36,25 @@ pipeline {
 
         stage('Push Image') {
             steps {
+                sh 'docker push $IMAGE_NAME:$IMAGE_TAG'
                 sh 'docker push $IMAGE_NAME:latest'
             }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                sh 'kubectl set image deployment/jenkins-demo jenkins-demo=$IMAGE_NAME:$IMAGE_TAG --record'
+                sh 'kubectl rollout status deployment/jenkins-demo'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Deployment successful! Image: $IMAGE_NAME:$IMAGE_TAG"
+        }
+        failure {
+            echo "Pipeline failed!"
         }
     }
 }

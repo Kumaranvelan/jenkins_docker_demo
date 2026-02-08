@@ -16,5 +16,7 @@ spec:
       containers:
       - name: app
         image: johnvelan/jenkins-docker-demo:latest
+        imagePullPolicy: Always
+
         ports:
         - containerPort: 3000
